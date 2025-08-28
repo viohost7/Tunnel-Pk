@@ -1,0 +1,255 @@
+# vpn_flutter_demo
+
+This is a **Flutter demo project** with GitHub Actions auto-build setup.
+
+## Features (Demo Only)
+- Login/Register (dummy)
+- Package List (dummy data)
+- My Subscription screen
+- VPN Config screen (static placeholder)
+
+---
+
+## Folder Structure
+```
+vpn_flutter_demo/
+│
+├── lib/
+│   ├── main.dart
+│   ├── screens/
+│   │   ├── login.dart
+│   │   ├── packages.dart
+│   │   ├── subscription.dart
+│   │   └── vpn_config.dart
+│   └── services/
+│       └── api_service.dart
+│
+├── pubspec.yaml
+└── .github/
+    └── workflows/
+        └── build.yml
+```
+
+---
+
+## `lib/main.dart`
+```dart
+import 'package:flutter/material.dart';
+import 'screens/login.dart';
+
+void main() {
+  runApp(VPNDemoApp());
+}
+
+class VPNDemoApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'VPN Demo',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: LoginScreen(),
+    );
+  }
+}
+```
+
+---
+
+## `lib/screens/login.dart`
+```dart
+import 'package:flutter/material.dart';
+import 'packages.dart';
+
+class LoginScreen extends StatelessWidget {
+  final TextEditingController emailCtrl = TextEditingController();
+  final TextEditingController passCtrl = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Login')),
+      body: Padding(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          children: [
+            TextField(controller: emailCtrl, decoration: InputDecoration(labelText: 'Email')),
+            TextField(controller: passCtrl, decoration: InputDecoration(labelText: 'Password'), obscureText: true),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => PackagesScreen()));
+              },
+              child: Text('Login'),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+---
+
+## `lib/screens/packages.dart`
+```dart
+import 'package:flutter/material.dart';
+import 'subscription.dart';
+
+class PackagesScreen extends StatelessWidget {
+  final List<Map<String, String>> packages = [
+    {"name": "Starter", "details": "10GB, 7 days, 1 device"},
+    {"name": "Plus", "details": "50GB, 30 days, 3 devices"},
+    {"name": "Unlimited", "details": "Unlimited*, 30 days, 5 devices"},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Packages')),
+      body: ListView.builder(
+        itemCount: packages.length,
+        itemBuilder: (ctx, i) {
+          return ListTile(
+            title: Text(packages[i]['name']!),
+            subtitle: Text(packages[i]['details']!),
+            trailing: ElevatedButton(
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => SubscriptionScreen()));
+              },
+              child: Text('Buy'),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+```
+
+---
+
+## `lib/screens/subscription.dart`
+```dart
+import 'package:flutter/material.dart';
+import 'vpn_config.dart';
+
+class SubscriptionScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('My Subscription')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Active Package: Plus (30 days)'),
+            SizedBox(height: 10),
+            Text('Remaining Data: 42GB'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => VPNConfigScreen()));
+              },
+              child: Text('View VPN Config'),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+---
+
+## `lib/screens/vpn_config.dart`
+```dart
+import 'package:flutter/material.dart';
+
+class VPNConfigScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('VPN Config')),
+      body: Padding(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('[Interface]', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('PrivateKey = <your_private_key>'),
+            Text('Address = 10.8.0.2/32'),
+            SizedBox(height: 20),
+            Text('[Peer]', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('PublicKey = <server_public_key>'),
+            Text('Endpoint = vpn.example.com:51820'),
+            Text('AllowedIPs = 0.0.0.0/0'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+---
+
+## `pubspec.yaml`
+```yaml
+name: vpn_flutter_demo
+publish_to: 'none'
+version: 1.0.0+1
+environment:
+  sdk: ">=2.17.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+```
+
+---
+
+## `.github/workflows/build.yml`
+```yaml
+name: Build APK
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.7.0'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: vpn-demo-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+```
+
+---
+
+✅ Ab aap kya karo:
+1. GitHub pe repo banao (naam rakh lo: **vpn_flutter_demo**).  
+2. Ye saara code repo me upload karo (mobile se bhi kar sakte ho).  
+3. Push karte hi GitHub Actions chalega → APK banega.  
+4. Repo ke **Actions tab** me jao → wahan se `vpn-demo-apk` download karke apne mobile me install kar lo. 🚀
